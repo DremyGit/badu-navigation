@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 const ObjectId = Schema.Types.ObjectId;
 
 const StatisticSchema = new Schema({
+  _id: { type: ObjectId, select: false },
   date: Date,
   websites: [{
     website: ObjectId,
@@ -10,13 +11,18 @@ const StatisticSchema = new Schema({
   }]
 });
 
-function getTodayDate() {
-  return new Date().setHours(8, 0, 0, 0);
+function getDateBegin(date) {
+  if (typeof date === 'undefined') {
+    date =  new Date();
+  } else if (!(date instanceof Date)) {
+    date = new Date(date);
+  }
+  return date.setHours(8, 0, 0, 0);
 }
 
 StatisticSchema.statics = {
   addClickCount: function (websiteId) {
-    const todayDate = getTodayDate();
+    const todayDate = getDateBegin();
     return Statistic.find({ date: todayDate, 'websites.website': websiteId })
       .count().exec().then(count => {
         console.log(count);
@@ -40,7 +46,7 @@ StatisticSchema.statics = {
   },
   getHotWebsitesInCategory: function (categorySet, day) {
     return this.aggregate([
-      { $match: { date : { $gte: new Date(getTodayDate() - 86400e3 * (day - 1)) }}},
+      { $match: { date : { $gte: new Date(getDateBegin() - 86400e3 * (day - 1)) }}},
       { $unwind: "$websites" },
       { $match: { "websites.website": { $in: categorySet }}},
       { $project: { _id: "$websites.website", count: "$websites.count" }},
@@ -51,6 +57,9 @@ StatisticSchema.statics = {
       { $unwind: "$website" },
       { $project: { _id: "$website._id", name: "$website.name", url: "$website.url", icon_url: "$website.icon_url", description: "$website.description" }}
     ]).exec();
+  },
+  getSiteStatistics: function (begin, end) {
+    return Statistic.find({ date: { $gte: getDateBegin(begin), $lte: getDateBegin(end) } }, {'websites._id': 0}).sort({date: 1}).exec();
   }
 }
 

@@ -6,7 +6,7 @@ exports.create = (obj, time, cert) => {
   cert = cert || privateConfig.jwt_cert;
   return jwt.sign(obj, cert, {
     algorithm: 'HS256',
-    expiresIn: time || '30m'
+    expiresIn: time || '2d'
   })
 };
 

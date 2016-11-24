@@ -59,6 +59,7 @@ submits
 router.use('/submits', submits.routes());
 
 statistics
+  .get('/', statisticController.getStatistics)
   .post('/', statisticController.addStatistic);
 router.use('/statistics', statistics.routes());
 

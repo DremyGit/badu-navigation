@@ -23,6 +23,23 @@ statisticController.addStatistic = async ctx => {
       throw new HttpError.BadRequestError();
       return;
   }
-}
+};
+
+statisticController.getStatistics = async ctx => {
+
+  switch (ctx.request.query.type) {
+    case 'click':
+      const begin = ctx.request.query.from;
+      const end = ctx.request.query.to;
+      const statistics = await Statistic.getSiteStatistics(begin, end);
+      ctx.status = 200;
+      ctx.body = statistics;
+      break;
+
+    default:
+      throw new HttpError.BadRequestError();
+      return;
+  }
+};
 
 module.exports = statisticController;
